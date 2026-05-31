@@ -1,0 +1,91 @@
+<!-- templates/admin_wa_result.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>WhatsApp Results | Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <style>
+    .res-main{padding:2.5rem 1.5rem 4rem;position:relative;flex:1;}
+    .res-wrap{max-width:900px;margin:auto;position:relative;z-index:1;}
+    .sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.25rem 0;}
+    .sum-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.5rem;text-align:center;}
+    .sum-num{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;display:block;}
+    .sum-lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+    .res-tbl{width:100%;border-collapse:collapse;font-size:.83rem;}
+    .res-tbl th{padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border);text-align:left;}
+    .res-tbl td{padding:.65rem 1rem;border-bottom:1px solid rgba(38,43,58,.5);}
+    .res-tbl tr:last-child td{border-bottom:none;}
+    .ok{color:#25D366;font-weight:600;}
+    .fail{color:#f06060;font-weight:600;}
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <div class="nav-brand"><span class="nav-icon">🎓</span><span class="nav-title">Result Portal</span></div>
+      <div class="nav-links">
+        <a href="/admin" class="nav-link">← Back to Admin</a>
+        <a href="/admin/logout" class="nav-btn nav-btn-outline">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="res-main">
+    <div class="dash-bg"><div class="blob blob-1"></div><div class="blob blob-2"></div></div>
+    <div class="res-wrap">
+
+      <span class="ai-chip">💬 WhatsApp Campaign Complete</span>
+      <h1 style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;margin:.5rem 0 .3rem;">
+        Delivery <em style="font-style:italic;background:linear-gradient(135deg,#25D366,#128C7E);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Report</em>
+      </h1>
+      <p style="color:var(--muted);font-size:.87rem;">Detailed delivery status for every WhatsApp message sent.</p>
+
+      <div class="sum-grid">
+        <div class="sum-card">
+          <span class="sum-num" style="color:#25D366;">{{ sent }}</span>
+          <span class="sum-lbl">✅ Sent Successfully</span>
+        </div>
+        <div class="sum-card">
+          <span class="sum-num" style="color:#f06060;">{{ failed }}</span>
+          <span class="sum-lbl">❌ Failed</span>
+        </div>
+        <div class="sum-card">
+          <span class="sum-num" style="color:var(--muted);">{{ skipped }}</span>
+          <span class="sum-lbl">⏭ Skipped (no phone)</span>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="res-tbl">
+          <thead>
+            <tr><th>Student ID</th><th>Name</th><th>Phone</th><th>Status</th><th>Details</th></tr>
+          </thead>
+          <tbody>
+            {% for r in results %}
+            <tr>
+              <td><code style="font-size:.76rem;color:var(--gold);">{{ r.id }}</code></td>
+              <td><strong>{{ r.name }}</strong></td>
+              <td style="font-size:.81rem;">{{ r.phone }}</td>
+              <td>
+                {% if r.success %}<span class="ok">✅ Sent</span>
+                {% else %}<span class="fail">❌ Failed</span>{% endif %}
+              </td>
+              <td style="color:var(--muted);font-size:.77rem;">{{ r.info }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="dash-actions" style="margin-top:1.5rem;">
+        <a href="/admin" class="btn-back">← Back to Admin</a>
+        <button onclick="window.print()" class="btn-print">🖨 Print Report</button>
+      </div>
+
+    </div>
+  </main>
+  <footer class="footer"><p>© 2025 Student Result Portal — Admin Panel</p></footer>
+</body>
+</html>

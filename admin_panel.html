@@ -1,0 +1,251 @@
+<!-- templates/admin_panel.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin Panel | Result Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <style>
+    .adm-main{padding:2rem 1.5rem 4rem;position:relative;flex:1;}
+    .adm-wrap{max-width:1100px;margin:auto;position:relative;z-index:1;}
+    .adm-h1{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;margin:.5rem 0 .2rem;}
+    .adm-h1 em{font-style:italic;background:linear-gradient(135deg,var(--gold-lt),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    /* Stats */
+    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:1.25rem 0;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.4rem;}
+    .stat-num{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;display:block;}
+    .stat-lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+    /* Warning banner */
+    .warn-banner{background:rgba(240,96,96,.08);border:1px solid rgba(240,96,96,.3);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;gap:.75rem;align-items:flex-start;}
+    .warn-icon{font-size:1.3rem;flex-shrink:0;}
+    .warn-title{font-weight:700;font-size:.88rem;color:#f06060;margin-bottom:.25rem;}
+    .warn-body{font-size:.82rem;color:var(--muted);line-height:1.6;}
+    .warn-body code{background:rgba(255,255,255,.07);padding:.1rem .35rem;border-radius:4px;font-size:.78rem;color:var(--gold-lt);}
+    /* Setup steps */
+    .setup-card{background:var(--surface);border:1px solid rgba(212,168,67,.25);border-radius:var(--radius);padding:1.4rem 1.6rem;margin-bottom:1.25rem;}
+    .setup-title{font-weight:700;color:var(--gold);font-size:.88rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;}
+    .setup-step{display:flex;gap:.75rem;align-items:flex-start;margin-bottom:.6rem;}
+    .step-num{width:22px;height:22px;background:var(--gold);color:#0d0f14;border-radius:50%;font-size:.72rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.05rem;}
+    .step-text{font-size:.83rem;color:var(--text);line-height:1.6;}
+    .step-text code{background:rgba(255,255,255,.07);padding:.1rem .35rem;border-radius:4px;font-size:.78rem;color:var(--gold-lt);}
+    .template-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem;font-family:'Courier New',monospace;font-size:.78rem;color:#aabbcc;line-height:1.8;margin:.5rem 0;}
+    /* Flash */
+    .flash{padding:.75rem 1rem;border-radius:10px;margin-bottom:1rem;font-size:.88rem;font-weight:500;}
+    .flash-success{background:rgba(62,207,122,.1);border:1px solid rgba(62,207,122,.3);color:#3ecf7a;}
+    .flash-error{background:rgba(240,96,96,.1);border:1px solid rgba(240,96,96,.3);color:#f06060;}
+    .flash-info{background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.3);color:var(--gold);}
+    /* Action bar */
+    .action-bar{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center;}
+    .btn-send-all{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:10px;padding:.75rem 1.5rem;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .2s;}
+    .btn-send-all:hover{opacity:.88;}
+    .btn-send-all:disabled{opacity:.4;cursor:not-allowed;}
+    .btn-reset{background:transparent;border:1.5px solid var(--border);color:var(--muted);border-radius:10px;padding:.7rem 1.1rem;font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;transition:border-color .2s,color .2s;}
+    .btn-reset:hover{border-color:var(--gold);color:var(--gold);}
+    /* Test bar */
+    .test-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:1.25rem;}
+    .test-bar label{font-size:.8rem;font-weight:600;color:var(--muted);white-space:nowrap;}
+    .test-bar input{flex:1;min-width:160px;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);border-radius:8px;padding:.55rem .9rem;font-family:inherit;font-size:.88rem;outline:none;}
+    .test-bar input:focus{border-color:#25D366;}
+    .btn-test{background:rgba(37,211,102,.12);border:1.5px solid rgba(37,211,102,.3);color:#25D366;border-radius:8px;padding:.55rem 1.1rem;font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap;}
+    /* Table */
+    .tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:auto;}
+    .stbl{width:100%;border-collapse:collapse;font-size:.83rem;}
+    .stbl th{text-align:left;padding:.65rem 1rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface);white-space:nowrap;}
+    .stbl td{padding:.65rem 1rem;border-bottom:1px solid rgba(38,43,58,.5);vertical-align:middle;}
+    .stbl tr:last-child td{border-bottom:none;}
+    .stbl tr:hover td{background:rgba(37,211,102,.02);}
+    .wa-sent{color:#25D366;font-weight:600;font-size:.8rem;}
+    .wa-pending{color:var(--muted);font-size:.8rem;}
+    .no-phone{color:#f06060;font-size:.78rem;font-style:italic;}
+    .btn-one{background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.25);color:#25D366;border-radius:7px;padding:.28rem .75rem;font-family:inherit;font-size:.76rem;font-weight:600;cursor:pointer;}
+    .btn-one:hover{background:rgba(37,211,102,.2);}
+    .btn-one:disabled{opacity:.35;cursor:not-allowed;}
+    @media(max-width:700px){.stat-grid{grid-template-columns:1fr 1fr;}.stbl th:nth-child(3),.stbl td:nth-child(3){display:none;}}
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <div class="nav-brand"><span class="nav-icon">🎓</span><span class="nav-title">Result Portal</span></div>
+      <div class="nav-links">
+        <span class="nav-user">🛡 Admin</span>
+        <a href="/admin/logout" class="nav-btn nav-btn-outline">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="adm-main">
+    <div class="dash-bg"><div class="blob blob-1"></div><div class="blob blob-2"></div></div>
+    <div class="adm-wrap">
+
+      <span class="ai-chip">💬 WhatsApp via Meta Cloud API</span>
+      <h1 class="adm-h1">Admin <em>Dashboard</em></h1>
+      <p style="color:var(--muted);font-size:.87rem;margin-bottom:1.25rem;">Send result notifications to parents via WhatsApp — free for first 1,000 messages/month</p>
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <!-- Credentials warning -->
+      {% if not credentials_set %}
+      <div class="warn-banner">
+        <span class="warn-icon">⚠️</span>
+        <div>
+          <div class="warn-title">Meta credentials not set — WhatsApp will not work yet</div>
+          <div class="warn-body">
+            Open <code>app.py</code> and fill in:
+            <code>META_ACCESS_TOKEN</code> and <code>META_PHONE_NUM_ID</code>
+            from your Meta Developer dashboard.
+            See the setup steps below.
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Stats -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <span class="stat-num">{{ total_students }}</span>
+          <span class="stat-lbl">Total Students</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" style="color:#25D366;">{{ with_phone }}</span>
+          <span class="stat-lbl">Have Parent Phone</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" style="color:var(--gold);">{{ wa_sent_count }}</span>
+          <span class="stat-lbl">WhatsApp Sent</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" style="color:#f06060;">{{ total_students - with_phone }}</span>
+          <span class="stat-lbl">No Phone Saved</span>
+        </div>
+      </div>
+
+      <!-- Setup guide (shown when credentials not set) -->
+      {% if not credentials_set %}
+      <div class="setup-card">
+        <div class="setup-title">📋 Meta WhatsApp Cloud API — One-Time Setup (3–5 days)</div>
+
+        <div class="setup-step">
+          <span class="step-num">1</span>
+          <div class="step-text"><strong>Create Meta Developer App</strong> — Go to <code>developers.facebook.com</code> → My Apps → Create App → choose <strong>Business</strong> → Add <strong>WhatsApp</strong> product. You instantly get a test number and token.</div>
+        </div>
+        <div class="setup-step">
+          <span class="step-num">2</span>
+          <div class="step-text"><strong>Copy your credentials</strong> — In App Dashboard → WhatsApp → API Setup, copy the <strong>Access Token</strong> and <strong>Phone Number ID</strong>. Paste them into <code>META_ACCESS_TOKEN</code> and <code>META_PHONE_NUM_ID</code> in <code>app.py</code>.</div>
+        </div>
+        <div class="setup-step">
+          <span class="step-num">3</span>
+          <div class="step-text"><strong>Create message template</strong> — Go to <code>business.facebook.com</code> → WhatsApp Manager → Message Templates → Create. Use: Category: <strong>Utility</strong>, Name: <code>result_notification</code>, Language: <strong>English</strong>. Template body:</div>
+        </div>
+        <div class="template-box">Assalam o Alaikum!<br>Result of &#123;&#123;1&#125;&#125;:<br>Marks: &#123;&#123;2&#125;&#125;/&#123;&#123;3&#125;&#125;<br>Grade: &#123;&#123;4&#125;&#125;<br>Percentage: &#123;&#123;5&#125;&#125;%<br>See full result at: your-school-website.com</div>
+        <div class="setup-step">
+          <span class="step-num">4</span>
+          <div class="step-text"><strong>Wait for template approval</strong> — Meta reviews templates in 24–48 hours. For immediate testing, add your own phone as a "Test Recipient" in the Meta dashboard — no approval needed for test recipients.</div>
+        </div>
+        <div class="setup-step">
+          <span class="step-num">5</span>
+          <div class="step-text"><strong>Add parent phones to Excel</strong> — Open <code>student_data.xlsx</code> → Students sheet → add Column H titled <strong>"Parent Phone"</strong> → enter numbers like <code>03001234567</code> → save → restart <code>python app.py</code>.</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Test WhatsApp -->
+      <div class="test-bar">
+        <label>🧪 Send Test WhatsApp (verify your setup works):</label>
+        <form method="POST" action="/admin/test-whatsapp" style="display:contents;">
+          <input type="text" name="test_phone" placeholder="03001234567" maxlength="15"/>
+          <button type="submit" class="btn-test" {% if not credentials_set %}disabled{% endif %}>
+            💬 Send Test
+          </button>
+        </form>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="action-bar">
+        <form method="POST" action="/admin/send-all"
+              onsubmit="return confirm('Send WhatsApp to all {{ with_phone }} parents with a saved phone number?');">
+          <button type="submit" class="btn-send-all" {% if not credentials_set or with_phone == 0 %}disabled{% endif %}>
+            💬 Send Results to All Parents ({{ with_phone }} messages)
+          </button>
+        </form>
+        <form method="POST" action="/admin/reset-whatsapp"
+              onsubmit="return confirm('Reset WhatsApp sent status for all students?');">
+          <button type="submit" class="btn-reset">🔄 Reset Sent Status</button>
+        </form>
+      </div>
+
+      <!-- Students table -->
+      <div class="tbl-wrap">
+        <table class="stbl">
+          <thead>
+            <tr>
+              <th>ID</th><th>Student Name</th><th>Class</th>
+              <th>Marks</th><th>Grade</th>
+              <th>Parent Phone</th><th>WhatsApp</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in students %}
+            <tr>
+              <td><code style="font-size:.76rem;color:var(--gold);">{{ s.id }}</code></td>
+              <td><strong>{{ s.name }}</strong></td>
+              <td style="color:var(--muted);font-size:.8rem;">{{ s.class }}</td>
+              <td style="font-size:.82rem;">{{ s.obtained }}/{{ s.total }}</td>
+              <td>
+                <span style="font-size:.76rem;font-weight:700;color:var(--gold);background:rgba(212,168,67,.1);padding:.15rem .5rem;border-radius:999px;">
+                  {{ s.grade }}
+                </span>
+              </td>
+              <td>
+                {% if s.parent_phone %}
+                  <span style="font-size:.81rem;">{{ s.parent_phone }}</span>
+                {% else %}
+                  <span class="no-phone">Not saved</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if s.whatsapp_sent %}
+                  <span class="wa-sent">✅ Sent</span>
+                {% else %}
+                  <span class="wa-pending">⏳ Pending</span>
+                {% endif %}
+              </td>
+              <td>
+                <form method="POST" action="/admin/send-one/{{ s.id }}" style="display:inline;">
+                  <button type="submit" class="btn-one"
+                    {% if not s.parent_phone or not credentials_set %}disabled{% endif %}>
+                    💬 Send
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Help tip -->
+      <div class="ai-advice" style="margin-top:1.5rem;">
+        <div class="advice-icon">💡</div>
+        <div class="advice-body">
+          <p class="advice-heading">How to Add Parent Phone Numbers</p>
+          <p class="advice-text">
+            Open <strong>student_data.xlsx</strong> → <strong>Students</strong> sheet → add a new column <strong>H</strong>
+            called <em>Parent Phone</em>. Enter each parent's number (e.g. <code style="background:rgba(255,255,255,.07);padding:.1rem .3rem;border-radius:4px;">03001234567</code>).
+            Save the file, then restart <code style="background:rgba(255,255,255,.07);padding:.1rem .3rem;border-radius:4px;">python app.py</code>.
+            Phone numbers load automatically.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+  <footer class="footer"><p>© 2025 Student Result Portal — Admin Panel</p></footer>
+</body>
+</html>

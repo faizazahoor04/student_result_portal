@@ -1,0 +1,255 @@
+<!-- ============================================================
+     templates/dashboard.html — Student result dashboard
+     Place in: student_result_portal/templates/dashboard.html
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard | {{ student.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <!-- Chart.js for subject bar chart -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ══════════════════ NAVBAR ══════════════════ -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <span class="nav-icon">🎓</span>
+        <span class="nav-title">AI Result Portal</span>
+      </div>
+      <div class="nav-links">
+        <a href="/dashboard"   class="nav-link nav-link--active">📊 Dashboard</a>
+        <a href="/ai-analysis" class="nav-link">🤖 AI Analysis</a>
+        <span class="nav-user">👋 {{ user.name }}</span>
+        <a href="/logout" class="nav-btn nav-btn-outline">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════════════ MAIN ══════════════════ -->
+  <main class="dash-main">
+    <div class="dash-bg">
+      <div class="blob blob-1"></div><div class="blob blob-2"></div>
+    </div>
+
+    <div class="dash-wrapper">
+
+      <!-- ── Welcome Banner ── -->
+      <div class="dash-welcome">
+        <div class="dw-left">
+          <p class="dw-eyebrow">Academic Year 2024–25</p>
+          <h1 class="dw-name">Welcome back, <em>{{ student.name.split()[0] }}</em> 👋</h1>
+          <p class="dw-sub">{{ student.cls }} &nbsp;·&nbsp; ID: {{ student.id }}</p>
+        </div>
+        <div class="dw-badge grade-{{ student.grade | replace('+','plus') }}">
+          <span class="dwb-label">Grade</span>
+          <span class="dwb-value">{{ student.grade }}</span>
+        </div>
+      </div>
+
+      <!-- ── KPI Cards ── -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(212,168,67,.12);color:#d4a843;">📋</div>
+          <div class="kpi-body">
+            <span class="kpi-label">Total Marks</span>
+            <span class="kpi-value">{{ student.total }}</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(122,173,255,.12);color:#7aadff;">✅</div>
+          <div class="kpi-body">
+            <span class="kpi-label">Obtained</span>
+            <span class="kpi-value">{{ student.obtained }}</span>
+          </div>
+        </div>
+        <div class="kpi-card kpi-card--accent">
+          <div class="kpi-icon" style="background:rgba(62,207,122,.12);color:#3ecf7a;">📈</div>
+          <div class="kpi-body">
+            <span class="kpi-label">Percentage</span>
+            <span class="kpi-value">{{ student.percentage }}%</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(212,168,67,.12);color:#d4a843;">🏆</div>
+          <div class="kpi-body">
+            <span class="kpi-label">Grade</span>
+            <span class="kpi-value">{{ student.grade }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Main Grid: Ring + Chart ── -->
+      <div class="dash-grid">
+
+        <!-- Score Ring -->
+        <div class="dash-card">
+          <h3 class="dc-title">Overall Score</h3>
+          <div class="pct-section" style="margin:1.5rem 0;">
+            <div class="pct-ring pct-ring--lg">
+              <svg viewBox="0 0 120 120" class="ring-svg">
+                <circle cx="60" cy="60" r="52" class="ring-track"/>
+                <circle cx="60" cy="60" r="52" class="ring-fill"
+                  style="stroke-dashoffset: calc(326.73 - (326.73 * {{ student.percentage }}) / 100)"/>
+              </svg>
+              <div class="pct-label">
+                <span class="pct-num">{{ student.percentage }}%</span>
+                <span class="pct-sub">Score</span>
+              </div>
+            </div>
+          </div>
+          <div class="progress-section">
+            <div class="progress-label">
+              <span>{{ student.obtained }} obtained</span>
+              <span>out of {{ student.total }}</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width:{{ student.percentage }}%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subject Bar Chart -->
+        <div class="dash-card dash-card--wide">
+          <h3 class="dc-title">Subject-wise Marks</h3>
+          <div class="chart-wrap">
+            <canvas id="subjectChart"></canvas>
+          </div>
+        </div>
+
+      </div><!-- /dash-grid -->
+
+      <!-- ── Quick AI Snapshot ── -->
+      {% if ai %}
+      <div class="dash-card ai-snapshot">
+        <div class="ais-header">
+          <div>
+            <span class="ai-chip">🤖 AI Snapshot</span>
+            <h3 class="dc-title" style="margin-top:.4rem;">Performance Summary</h3>
+          </div>
+          <a href="/ai-analysis" class="ais-cta">Full Analysis →</a>
+        </div>
+
+        <div class="ais-pills">
+          {% if ai.strong %}
+          <div class="summary-pill strong-pill">
+            <span class="pill-icon">💪</span>
+            <div>
+              <span class="pill-label">Strong Subjects</span>
+              <span class="pill-subjects">{{ ai.strong | join(", ") }}</span>
+            </div>
+          </div>
+          {% endif %}
+          {% if ai.weak %}
+          <div class="summary-pill weak-pill">
+            <span class="pill-icon">⚠️</span>
+            <div>
+              <span class="pill-label">Needs Improvement</span>
+              <span class="pill-subjects">{{ ai.weak | join(", ") }}</span>
+            </div>
+          </div>
+          {% endif %}
+          {% if not ai.weak %}
+          <div class="summary-pill perfect-pill">
+            <span class="pill-icon">🏆</span>
+            <div>
+              <span class="pill-label">No Weak Subjects</span>
+              <span class="pill-subjects">Excellent across all subjects!</span>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="ai-advice" style="margin-top:1rem;">
+          <div class="advice-icon">🧠</div>
+          <div class="advice-body">
+            <p class="advice-heading">AI Recommendation</p>
+            <p class="advice-text">{{ ai.overall_advice }}</p>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- ── Action Footer ── -->
+      <div class="dash-actions">
+        <a href="/ai-analysis" class="btn-ai-link">🤖 Full AI Analysis</a>
+        <button onclick="window.print()" class="btn-print">🖨 Print Result</button>
+        <a href="/logout" class="btn-back">← Logout</a>
+      </div>
+
+    </div><!-- /dash-wrapper -->
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 Student Result Portal &nbsp;·&nbsp; Powered by Flask &nbsp;·&nbsp; All rights reserved.</p>
+  </footer>
+
+  <!-- Chart.js initialisation -->
+  <script>
+    fetch("/api/chart-data")
+      .then(r => r.json())
+      .then(data => {
+        const ctx = document.getElementById("subjectChart").getContext("2d");
+
+        // Color each bar based on percentage
+        const bgColors = data.percentages.map(p =>
+          p >= 80 ? "rgba(62,207,122,.75)"
+          : p >= 65 ? "rgba(122,173,255,.75)"
+          : p >= 55 ? "rgba(212,168,67,.75)"
+          : "rgba(240,96,96,.75)"
+        );
+
+        new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: data.labels,
+            datasets: [
+              {
+                label: "Obtained",
+                data: data.values,
+                backgroundColor: bgColors,
+                borderRadius: 8,
+                borderSkipped: false,
+              },
+              {
+                label: "Total",
+                data: data.totals,
+                backgroundColor: "rgba(255,255,255,.06)",
+                borderRadius: 8,
+                borderSkipped: false,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { labels: { color: "#e8eaf0", font: { family: "DM Sans" } } },
+              tooltip: {
+                callbacks: {
+                  afterLabel: (ctx) => {
+                    if (ctx.datasetIndex === 0) {
+                      const pct = data.percentages[ctx.dataIndex];
+                      return `Percentage: ${pct}%`;
+                    }
+                  }
+                }
+              }
+            },
+            scales: {
+              x: { ticks: { color: "#7c8099" }, grid: { color: "#262b3a" } },
+              y: { ticks: { color: "#7c8099" }, grid: { color: "#262b3a" }, beginAtZero: true }
+            }
+          }
+        });
+      });
+  </script>
+
+</body>
+</html>

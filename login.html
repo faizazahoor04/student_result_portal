@@ -1,0 +1,180 @@
+<!-- ============================================================
+     templates/login.html
+     Place in: student_result_portal/templates/login.html
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Login | Result Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body class="login-body">
+
+  <!-- Animated background blobs -->
+  <div class="login-bg">
+    <div class="lb-blob lb-b1"></div>
+    <div class="lb-blob lb-b2"></div>
+    <div class="lb-blob lb-b3"></div>
+  </div>
+
+  <div class="login-page">
+
+    <!-- ── Left panel: branding ── -->
+    <div class="login-left">
+      <div class="ll-content">
+        <div class="ll-logo">
+          <span class="ll-logo-icon">🎓</span>
+          <span class="ll-logo-text"> AI Result Portal</span>
+        </div>
+        <h1 class="ll-heading">Your Academic<br/><em>Journey Starts Here</em></h1>
+        <p class="ll-sub">Log in with your Student ID to view your results, grades, and get personalised AI-powered study recommendations.</p>
+
+        <div class="ll-features">
+          <div class="llf-item"><span class="llf-dot llf-green"></span>Instant result access</div>
+          <div class="llf-item"><span class="llf-dot llf-blue"></span>AI subject analysis</div>
+          <div class="llf-item"><span class="llf-dot llf-gold"></span>Personalised study tips</div>
+          <div class="llf-item"><span class="llf-dot llf-purple"></span>Secure & private</div>
+        </div>
+
+        <div class="ll-stats">
+          <div class="lls-item"><span class="lls-num">20</span><span class="lls-lbl">Students</span></div>
+          <div class="lls-div"></div>
+          <div class="lls-item"><span class="lls-num">6</span><span class="lls-lbl">Subjects</span></div>
+          <div class="lls-div"></div>
+          <div class="lls-item"><span class="lls-num">AI</span><span class="lls-lbl">Powered</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Right panel: login form ── -->
+    <div class="login-right">
+      <div class="login-card">
+
+        <div class="lc-top">
+          <span class="lc-chip">🔐 Secure Login</span>
+          <h2 class="lc-title">Welcome Back</h2>
+          <p class="lc-sub">Enter your credentials to access your dashboard</p>
+        </div>
+
+        <!-- Error message -->
+        {% if error %}
+        <div class="lc-error" id="lc-error">
+          <span class="lce-icon">⚠</span>
+          <span>{{ error }}</span>
+        </div>
+        {% endif %}
+
+        <!-- Login form -->
+        <form method="POST" action="/login" class="lc-form" id="loginForm" novalidate>
+
+          <div class="lc-field" id="field-sid">
+            <label class="lc-label" for="student_id">Student ID</label>
+            <div class="lc-input-wrap">
+              <span class="lci-icon">👤</span>
+              <input
+                type="text"
+                id="student_id"
+                name="student_id"
+                class="lc-input"
+                placeholder="e.g. STU001"
+                autocomplete="off"
+                autocapitalize="characters"
+                maxlength="10"
+              />
+            </div>
+            <span class="lc-field-err" id="err-sid"></span>
+          </div>
+
+          <div class="lc-field" id="field-pw">
+            <label class="lc-label" for="password">Password</label>
+            <div class="lc-input-wrap">
+              <span class="lci-icon">🔒</span>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="lc-input"
+                placeholder="Your secret password"
+                autocomplete="current-password"
+              />
+              <button type="button" class="lc-eye" id="togglePw" title="Show/hide password">👁</button>
+            </div>
+            <span class="lc-field-err" id="err-pw"></span>
+          </div>
+
+          <button type="submit" class="lc-submit" id="submitBtn">
+            <span class="lcs-text">Login to Dashboard</span>
+            <span class="lcs-arrow">→</span>
+            <span class="lcs-spinner" id="spinner" style="display:none;">⏳</span>
+          </button>
+
+        </form>
+
+        <div class="lc-hint">
+          <p>🔑 Default password = your Student ID in lowercase</p>
+          <p>Example: ID <code>STU001</code> → Password <code>stu001</code></p>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /login-page -->
+
+  <script>
+    // ── Toggle password visibility ───────────────────────────
+    document.getElementById("togglePw").addEventListener("click", function () {
+      const inp = document.getElementById("password");
+      inp.type  = inp.type === "password" ? "text" : "password";
+      this.textContent = inp.type === "password" ? "👁" : "🙈";
+    });
+
+    // ── Client-side validation ───────────────────────────────
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      let valid = true;
+
+      const sid  = document.getElementById("student_id").value.trim();
+      const pw   = document.getElementById("password").value.trim();
+      const errSid = document.getElementById("err-sid");
+      const errPw  = document.getElementById("err-pw");
+
+      errSid.textContent = "";
+      errPw.textContent  = "";
+
+      if (!sid) {
+        errSid.textContent = "Student ID is required.";
+        document.getElementById("field-sid").classList.add("field-error");
+        valid = false;
+      } else {
+        document.getElementById("field-sid").classList.remove("field-error");
+      }
+
+      if (!pw) {
+        errPw.textContent = "Password is required.";
+        document.getElementById("field-pw").classList.add("field-error");
+        valid = false;
+      } else {
+        document.getElementById("field-pw").classList.remove("field-error");
+      }
+
+      if (!valid) { e.preventDefault(); return; }
+
+      // Show spinner
+      document.querySelector(".lcs-text").style.display = "none";
+      document.querySelector(".lcs-arrow").style.display = "none";
+      document.getElementById("spinner").style.display  = "inline";
+      document.getElementById("submitBtn").disabled = true;
+    });
+
+    // Auto uppercase the Student ID field
+    document.getElementById("student_id").addEventListener("input", function () {
+      const pos = this.selectionStart;
+      this.value = this.value.toUpperCase();
+      this.setSelectionRange(pos, pos);
+    });
+  </script>
+</body>
+</html>
